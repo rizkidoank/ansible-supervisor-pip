@@ -1,0 +1,52 @@
+#!/bin/bash
+# {{ ansible_managed }}
+
+if [[ -z "$TRAVELOKA_KEY" ]];
+then
+  echo Error: TRAVELOKA_KEY is unset
+  exit 1
+fi
+
+for i in `env | sed 's/=.*//'`; do
+  if [[ "$i" == "LANG"
+     || "$i" =~ "LC_"
+     || "$i" =~ "PWD"
+     || "$i" =~ "TRAVELOKA_KEY" ]];
+  then
+    :
+  else
+    unset $i
+  fi
+done
+
+export PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+SUPERVISOR_HAS_KEY=0
+SUPERVISOR_PID=$(pgrep supervisord)
+
+if [[ "$?" == "0" ]];
+then
+  sudo grep TRAVELOKA_KEY /proc/$SUPERVISOR_PID/environ >/dev/null
+  if [[ "$?" == "0" ]];
+  then
+    SUPERVISOR_HAS_KEY=1
+  else
+    echo supervisord has no key
+    sudo service supervisor stop
+
+    # supervisor (somehow) is not immediately stopped after we issued stop service command
+    # this is a workaround, to wait supervisor to stop properly, and retry every 0.5 seconds
+    # for 10 times (maximum retry).
+    SLEEP_RETRY=0
+    MAX_SLEEP_RETRY=10
+    while [[ "$(pgrep supervisord)" != "" && "$SLEEP_RETRY" -lt "$MAX_SLEEP_RETRY" ]]; do
+      sleep 0.5
+      SLEEP_RETRY=$[SLEEP_RETRY+1]
+    done
+  fi
+fi
+
+if [[ "$SUPERVISOR_HAS_KEY" != "1" ]];
+then
+  sudo -E {{ supervisor_pip_home }}/bin/supervisord -c {{ supervisor_pip_home }}/etc/supervisord.conf
+fi

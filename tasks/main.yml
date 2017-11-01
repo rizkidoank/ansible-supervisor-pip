@@ -1,0 +1,75 @@
+---
+# tasks file for ansible-supervisor-pip
+- block:
+  - name: install supervisor
+    pip:
+      name: supervisor
+      version:    "{{ supervisor_pip_version }}"
+      virtualenv: "{{ supervisor_pip_home }}"
+
+  - name: create additional supervisor directories
+    file:
+      path: "{{ supervisor_pip_home }}/{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode:  0755
+    with_items:
+      - "etc"
+      - "log"
+      - "run"
+
+  - name: create directory for third-party configuration files
+    file:
+      path: /etc/supervisor/conf.d
+      state: directory
+      owner: root
+      group: root
+      mode:  0755
+      recurse: yes
+
+  - name: install supervisor configuration
+    template:
+      src:  supervisord.conf.j2
+      dest: "{{ supervisor_pip_home }}/etc/supervisord.conf"
+      backup: yes
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: install supervisor service script
+    template:
+      dest:  /etc/init.d/supervisor
+      src:   supervisor-init.sh.j2
+      owner: root
+      group: root
+      mode:  0755
+
+  - name: install script for starting supervisor with key
+    template:
+      src:    start-supervisor-with-key.sh.j2
+      dest:   /usr/bin/start-supervisor-with-key
+      backup: true
+      owner:  root
+      group:  root
+      mode:   0755
+
+  - name: install supervisorctl wrapper
+    template:
+      src:  supervisorctl.sh.j2
+      dest: /usr/bin/supervisorctl
+      backup: yes
+      owner: root
+      group: root
+      mode:  0755
+
+  - name: enable and start supervisor service
+    service:
+      name: supervisor
+      enabled: true
+      state: started
+
+  become: yes
+  become_method: sudo
+  tags:
+    - supervisor_pip

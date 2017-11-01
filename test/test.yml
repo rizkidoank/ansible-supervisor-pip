@@ -1,0 +1,9 @@
+---
+- hosts: all
+  vars:
+    apt_cache_valid_time: 3600
+  roles:
+    - role: apt_sources_list
+    - role: pip
+    - role: virtualenv_pip
+    - role: ansible-supervisor-pip

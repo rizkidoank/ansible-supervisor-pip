@@ -1,0 +1,19 @@
+; supervisor config file
+
+[unix_http_server]
+file={{ supervisor_pip_home }}/run/supervisor.sock
+
+[supervisord]
+logfile={{ supervisor_pip_home }}/log/supervisord.log
+pidfile={{ supervisor_pip_home }}/run/supervisord.pid
+
+minfds= {{ supervisor_pip_minfds }}
+
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
+
+[supervisorctl]
+serverurl=unix://{{ supervisor_pip_home }}/run/supervisor.sock
+
+[include]
+files = {{ supervisor_conf_dir }}/*.conf

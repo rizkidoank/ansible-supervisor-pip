@@ -1,0 +1,5 @@
+---
+# vars file for ansible-supervisor-pip
+supervisor_conf_dir: /etc/supervisor/conf.d
+supervisor_pip_home: /opt/supervisor
+supervisor_pip_minfds: 4096
