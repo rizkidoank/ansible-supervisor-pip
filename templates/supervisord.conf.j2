@@ -7,8 +7,6 @@ file={{ supervisor_pip_home }}/run/supervisor.sock
 logfile={{ supervisor_pip_home }}/log/supervisord.log
 pidfile={{ supervisor_pip_home }}/run/supervisord.pid
 
-minfds= {{ supervisor_pip_minfds }}
-
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory = supervisor.rpcinterface:make_main_rpcinterface
 

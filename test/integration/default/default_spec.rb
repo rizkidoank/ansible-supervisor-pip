@@ -47,3 +47,4 @@ describe file('/opt/supervisor/etc/supervisord.conf') do
   its('group') { should eq 'root' }
   its('mode') { should cmp '0644' }
 end
+
